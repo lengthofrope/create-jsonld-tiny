@@ -5,6 +5,22 @@ Simple PHP library to create JSON-LD output. Tiny version!
 Note:
 Datatypes are not yet supported
 
+This is the TINY VERSION of the class, mainly there for the following schema's:
+- Article, 
+- BlogPosting, 
+- Book, 
+- Code, 
+- Game, 
+- Movie, 
+- MusicRecording, 
+- Painting, 
+- Photograph, 
+- Recipe, 
+- Organization, 
+- Corporation, 
+- LocalBusiness, 
+- SportsOrganization, 
+
 Usage:
 ```php
 use \LengthOfRope\JSONLD;
