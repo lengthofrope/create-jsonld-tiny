@@ -1,9 +1,9 @@
 {
-    "name": "lengthofrope/create-jsonld",
-    "description": "Simple PHP library to create JSON-LD output.",
+    "name": "lengthofrope/create-jsonld-tiny",
+    "description": "Simple PHP library to create JSON-LD output. Tiny version",
     "type": "library",
     "keywords": ["JSON-LD", "jsonld"],
-    "homepage": "https://github.com/lengthofrope/create-jsonld",
+    "homepage": "https://github.com/lengthofrope/create-jsonld-tiny",
     "license": "MIT",
     "authors": [
         {
