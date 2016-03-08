@@ -235,6 +235,7 @@ class Build
                                 $class = substr($checkClass['class'], 0, -6);
                                 if (!in_array($class, $this->tinyItems)) {
                                     array_push($this->tinyItems, $class);
+                                    $newExtendAdded = true;
                                 }
                             }
                         }
