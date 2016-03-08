@@ -30,4 +30,19 @@
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
-\LengthOfRope\JSONLD\Generator\Build::factory();
+\LengthOfRope\JSONLD\Generator\Build::factory(array(
+    'Article', 
+    'BlogPosting', 
+    'Book', 
+    'Code', 
+    'Game', 
+    'Movie', 
+    'MusicRecording', 
+    'Painting', 
+    'Photograph', 
+    'Recipe', 
+    'Organization', 
+    'Corporation', 
+    'LocalBusiness', 
+    'SportsOrganization', 
+));

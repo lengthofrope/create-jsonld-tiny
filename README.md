@@ -1,6 +1,6 @@
-# create-jsonld [![Build Status](https://travis-ci.org/lengthofrope/create-jsonld.svg?branch=master)](https://travis-ci.org/lengthofrope/create-jsonld)
+# create-jsonld-tiny [![Build Status](https://travis-ci.org/lengthofrope/create-jsonld-tiny.svg?branch=master)](https://travis-ci.org/lengthofrope/create-jsonld-tiny)
 
-Simple PHP library to create JSON-LD output. 
+Simple PHP library to create JSON-LD output. Tiny version!
 
 Note:
 Datatypes are not yet supported

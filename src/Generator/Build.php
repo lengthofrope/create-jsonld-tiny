@@ -43,19 +43,24 @@ class Build
     private $schema;
     private $types = array();
     private $props = array();
+    private $tinyItems = array();
 
     /**
      * Factory
+     * @param array $tinyItems Array with classes we want.
      * @return \LengthOfRope\JSONLD\Generator\Build
      */
-    public static function factory()
+    public static function factory($tinyItems)
     {
-        return new Build();
+        return new Build($tinyItems);
     }
 
-    private function __construct()
+    private function __construct($tinyItems)
     {
         set_time_limit(0);
+
+        $this->tinyItems = $tinyItems;
+
         $this->getJSONVersionOfSchema();
 
         $this->parse();
@@ -104,7 +109,8 @@ class Build
 
     private function parse()
     {
-        foreach ($this->schema->{'@graph'} as $key => $item) {
+        foreach ($this->schema->{'@graph'} as $key => $item)
+        {
             $types = $item->type;
             if ($types !== 'rdf:Property') {
                 // Skip all but properties
@@ -117,7 +123,8 @@ class Build
                 $item->domainIncludes = array($item->domainIncludes);
             }
 
-            foreach ($item->domainIncludes as $dom) {
+            foreach ($item->domainIncludes as $dom)
+            {
                 if (!in_array($dom->id, $domains)) {
                     $domains[] = $dom->id;
                 }
@@ -131,9 +138,10 @@ class Build
                 $item->rangeIncludes = array($item->rangeIncludes);
             }
 
-            foreach ($item->rangeIncludes as $ran) {
+            foreach ($item->rangeIncludes as $ran)
+            {
                 $range[] = array(
-                    'id'    => $ran->id,
+                    'id' => $ran->id,
                     'class' => str_replace('schema:', '', $ran->id) . 'Schema'
                 );
             }
@@ -144,7 +152,8 @@ class Build
         }
 
 
-        foreach ($this->schema->{'@graph'} as $key => $item) {
+        foreach ($this->schema->{'@graph'} as $key => $item)
+        {
             $types = $item->type;
             if ($types === 'rdf:Property') {
                 // Skip properties in first run
@@ -154,24 +163,26 @@ class Build
             $item->props = array();
 
             // Add properties to item
-            foreach ($this->props as $prop) {
+            foreach ($this->props as $prop)
+            {
                 if (in_array($item->id, $prop->domainIncludes)) {
                     if (!isset($item->props[$prop->{'rdfs:label'}])) {
                         $item->props[$prop->{'rdfs:label'}] = array(
-                            'id'             => $prop->id,
+                            'id' => $prop->id,
                             'domainIncludes' => $prop->domainIncludes,
-                            'rangeIncludes'  => $prop->rangeIncludes,
-                            'comment'        => $prop->{'rdfs:comment'},
-                            'label'          => $prop->{'rdfs:label'},
-                            'getter'         => 'get' . ucfirst($prop->{'rdfs:label'}),
-                            'setter'         => 'set' . ucfirst($prop->{'rdfs:label'}),
+                            'rangeIncludes' => $prop->rangeIncludes,
+                            'comment' => $prop->{'rdfs:comment'},
+                            'label' => $prop->{'rdfs:label'},
+                            'getter' => 'get' . ucfirst($prop->{'rdfs:label'}),
+                            'setter' => 'set' . ucfirst($prop->{'rdfs:label'}),
                         );
                     }
                 }
             }
 
             if (is_array($types)) {
-                foreach ($types as $type) {
+                foreach ($types as $type)
+                {
                     $this->types[$type][$item->id] = $item;
                 }
             } else if (!empty($types)) {
@@ -188,10 +199,57 @@ class Build
         }
 
         $loader = new \Twig_Loader_Filesystem(dirname(dirname(__DIR__)) . '/tools/');
-        $twig   = new \Twig_Environment($loader);
+        $twig = new \Twig_Environment($loader);
 
-        foreach ($this->types['rdfs:Class'] as $item) {
+        // Make sure we add all classes we extend to
+        do {
+            $newExtendAdded = false;
+            foreach ($this->types['rdfs:Class'] as $item)
+            {
+                // Add Schema to all classes to prevent failures (classes Class or Float) are reserved.
+                if (!in_array($item->{'rdfs:label'}, $this->tinyItems)) {
+                    continue;
+                }
+
+                if (in_array($class, array('DataTypeSchema'))) {
+                    continue;
+                }
+
+                $classextends = @$item->{'rdfs:subClassOf'};
+                $classextends = @str_replace('schema:', '', $classextends->id);
+                if (!empty($classextends)) {
+                    if (!in_array($classextends, $this->tinyItems)) {
+                        array_push($this->tinyItems, $classextends);
+                        $newExtendAdded = true;
+                    }
+                }
+
+                // Also check properties
+                if (is_array($item->props)) {
+                    foreach ($item->props as $prop)
+                    {
+                        if (is_array($prop['rangeIncludes'])) {
+                            foreach ($prop['rangeIncludes'] as $checkClass)
+                            {
+                                // Strip 'Schema' from classname
+                                $class = substr($checkClass['class'], 0, -6);
+                                if (!in_array($class, $this->tinyItems)) {
+                                    array_push($this->tinyItems, $class);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } while ($newExtendAdded);
+
+        foreach ($this->types['rdfs:Class'] as $item)
+        {
             // Add Schema to all classes to prevent failures (classes Class or Float) are reserved.
+            if (!in_array($item->{'rdfs:label'}, $this->tinyItems)) {
+                continue;
+            }
+
             $class = $item->{'rdfs:label'} . 'Schema';
 
             if (in_array($class, array('DataTypeSchema'))) {
@@ -211,12 +269,12 @@ class Build
             $context = @$this->schema->{'@context'}->$context[0];
 
             $content = $twig->render('template.twig', array(
-                'class'        => $class,
+                'class' => $class,
                 'classcomment' => $item->{'rdfs:comment'},
                 'classExtends' => $classextends,
-                'properties'   => $item->props,
-                'context'      => $context,
-                'type'         => $item->{'rdfs:label'},
+                'properties' => $item->props,
+                'context' => $context,
+                'type' => $item->{'rdfs:label'},
             ));
 
 
