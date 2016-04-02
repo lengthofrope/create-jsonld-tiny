@@ -1,4 +1,4 @@
-# create-jsonld-tiny [![Build Status](https://travis-ci.org/lengthofrope/create-jsonld-tiny.svg?branch=master)](https://travis-ci.org/lengthofrope/create-jsonld-tiny)
+# create-jsonld-tiny [![Build Status](https://travis-ci.org/lengthofrope/create-jsonld-tiny.svg?branch=master)](https://travis-ci.org/lengthofrope/create-jsonld-tiny) [![Codacy Badge](https://api.codacy.com/project/badge/grade/698e66b782eb46f5a1999d05185f5636)](https://www.codacy.com/app/bdekort/create-jsonld-tiny)
 
 Simple PHP library to create JSON-LD output. Tiny version!
 
